@@ -68,7 +68,7 @@ def open_audio():
          harvard = sr.AudioFile(input_file)
          with harvard as source:
               audio=recognizer.record(source)
-              text=recognizer.recognize_wit(audio,key="C752D6AMU2IGADOHS3QCQEUJ4OEG677E")
+              text=recognizer.recognize_wit(audio,key=YOUR_WIT_ID)
               txt_edit.insert(tk.END, text)
     window.title(f"Transcibe Audio to Text - {filepath}")
 
@@ -82,7 +82,7 @@ async def speech_to_text():
     with microphone as source:
          recognizer.adjust_for_ambient_noise(source)
          audio = recognizer.listen(source)
-         text = recognizer.recognize_wit(audio,key="C752D6AMU2IGADOHS3QCQEUJ4OEG677E")
+         text = recognizer.recognize_wit(audio,key=YOUR_WIT_ID)
          #txt_edit.insert(tk.END,text)
     return text
 
