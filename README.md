@@ -4,3 +4,6 @@ It also allows you to **convert an audio file into text**, and **vice versa**.
 
 # Application
 A .exe file will be soon made available, but for the time being you can run it as a normal python script on winows cmd or bash terminal.
+
+# YouTube Video
+https://www.youtube.com/watch?v=YbKTBQXfQBk
