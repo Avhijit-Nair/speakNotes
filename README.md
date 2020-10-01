@@ -6,7 +6,8 @@ It also allows you to **convert an audio file into text**, and **vice versa**.
 ![Speak Notes](https://github.com/Avhijit-codeboy/speakNotes/blob/master/speakNotes/img.PNG)
 
 # Application
-A .exe file will be soon made available, but for the time being you can run it as a normal python script on winows cmd or bash terminal.
+A .exe file will be soon made available, but for the time being you can run it as a normal python script on windows cmd or bash terminal.
+**python speakNotes.py**
 
 # YouTube Video
 https://www.youtube.com/watch?v=YbKTBQXfQBk
