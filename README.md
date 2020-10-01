@@ -10,4 +10,5 @@ A .exe file will be soon made available, but for the time being you can run it a
 **python speakNotes.py**
 
 # YouTube Video
+Demo video available here:-
 https://www.youtube.com/watch?v=YbKTBQXfQBk
