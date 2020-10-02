@@ -13,6 +13,17 @@ import tkinter.font as tkFont
 import gtts
 import threading, time
 from myimages import *
+import pyttsx3
+
+#for speaker
+engine=pyttsx3.init()
+voices = engine.getProperty('voices')
+engine.setProperty('voice', voices[0].id) #you can choose the voice by changing the array index
+
+def speak(audio):
+    engine.say(audio)
+    engine.runAndWait()
+
 class Task(threading.Thread):
     def __init__(self, master, task):
         threading.Thread.__init__(self, target=task, args=(master,))
@@ -37,6 +48,16 @@ def enviar1(master):
         pg.start(100)
         text_to_speech()
         pg.stop()
+
+def enviar2(master):
+    if 0:
+        pass
+    else:
+        #master.pg_bar.start(500)
+        pg.start(100)
+        read_text()
+        pg.stop()
+
 # a function for handling the saving of file part
 def save_file():
     filepath=asksaveasfilename(defaultextension="txt",filetypes=[("Text Files","*.txt"),("All Files","*.*")],)
@@ -149,6 +170,10 @@ def text_to_speech():
     tts.save(filepath)
     window.title(f"speakNotes - {filepath}")
 
+def read_text():
+    speak(txt_edit.get(1.0,tk.END))
+
+
 #defining window and title of application
 window = tk.Tk()
 window.title("speakNotes")
@@ -203,6 +228,7 @@ btn_speak = tk.Button(fr_buttons,image=mic_img,command=speech_to_text_helper)
 btn_paint = tk.Button(fr_buttons,image=paint_img,command=choose_option)
 btn_audioToTxt = tk.Button(fr_buttons,text="Audio To Text",command=lambda :Task(window, enviar))
 btn_txtToaudio = tk.Button(fr_buttons,text="Text To Audio",command=lambda :Task(window, enviar1))
+btn_txtRead = tk.Button(fr_buttons,text="Read Text",command=lambda :Task(window, enviar2))
 #btnEnd
 
 #btn placement on the window
@@ -212,7 +238,8 @@ btn_speak.grid(row=2,column=0,sticky="ew",padx=5,pady=10)
 btn_paint.grid(row=3,column=0,sticky="ew",padx=5,pady=10)
 btn_audioToTxt.grid(row=4,column=0,sticky="ew",padx=5,pady=10)
 btn_txtToaudio.grid(row=5,column=0,sticky="ew",padx=5,pady=10)
-btn_back.grid(row=6,column=0,sticky="ew",padx=5)
+btn_txtRead.grid(row=6,column=0,sticky="ew",padx=5,pady=10)
+btn_back.grid(row=7,column=0,sticky="ew",padx=5)
 
 
 window.protocol("WM_DELETE_WINDOW", on_closing)
