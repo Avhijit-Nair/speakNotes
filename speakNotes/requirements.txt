@@ -3,5 +3,3 @@ PIL
 tkfontchooser
 gTTs
 asyncio
-Audio files to be converted should in .wav format
-speech Recognition is still not threaded, so chances are that the window will freeze
