@@ -3,3 +3,5 @@ PIL
 tkfontchooser
 gTTs
 asyncio
+pyttsx3
+speech_recognition
