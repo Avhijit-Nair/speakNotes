@@ -15,7 +15,7 @@ Debian: ```sudo apt install espeak python3-tk```
 
 Arch Linux: ```pacman -S espeak tk```
 
-See more ![here](https://tkdocs.com/tutorial/install.html)
+See more https://tkdocs.com/tutorial/install.html
 
 **NOTE**: you will need to setup your WIT personal token in config-sample.ini file then rename that file in config.ini
 
