@@ -1,19 +1,114 @@
 #!/usr/bin/env python
+import io
+import os
 import tkinter as tk
+from fpdf import FPDF 
+from tkinter.ttk import *
 from tkinter import IntVar
 from tkinter.colorchooser import askcolor   
 from tkinter.filedialog import askopenfilename,asksaveasfilename
 from tkinter import messagebox
+from tkfontchooser import askfont
 from PIL import ImageTk, Image
+import tkinter.font as tkFont
 import speech_recognition as sr
 import asyncio
-from tkinter.ttk import *
-from tkfontchooser import askfont
-import tkinter.font as tkFont
 import gtts
 import threading, time
-from myimages import *
 import pyttsx3
+from myimages import *
+from configparser import ConfigParser
+
+from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+from pdfminer.converter import TextConverter
+from pdfminer.layout import LAParams
+from pdfminer.pdfpage import PDFPage
+
+##########
+# CONFIG #
+##########
+def safe_conf_get(config_parser, section, key_name):
+    '''
+    returns parsed value if key_name exists in config.ini, exit otherwise
+    '''
+    try:
+        return config_parser.get(section, key_name)
+    except Exception:
+        print(key_name + " not in \"" + section + "\" section!")
+        exit()
+
+def check_config():
+    '''
+    check if config.ini file exists
+    '''
+    if not os.path.isfile("config.ini"):
+        print(
+            "Config file not present.\n" +
+            "Rename 'config-sample.ini' in 'config.ini' and set the missing values.")
+        exit()
+
+######
+# PDF 
+######
+def text_to_pdf(f):
+    pdf = FPDF()    
+    pdf.add_page() 
+    pdf.set_font("Arial", size = 15) 
+    
+    f = txt_edit.get(1.0, tk.END)
+
+    # insert the texts in pdf 
+    for x in f: 
+        pdf.cell(200, 10, txt = x, ln = 1, align = 'C') 
+    
+    pdffilepath=asksaveasfilename(defaultextension=".pdf",filetypes=[("PDF Files","*.pdf"),("All Files","*.*")],)
+
+    # save the pdf with name .pdf 
+    pdf.output(pdffilepath)    
+
+
+def convert_pdf_to_txt(path):
+    '''Convert pdf content from a file path to text
+
+    :path the file path
+    '''
+    rsrcmgr = PDFResourceManager()
+    codec = 'utf-8'
+    laparams = LAParams()
+
+    with io.StringIO() as retstr:
+        
+        with TextConverter(rsrcmgr, retstr, codec=codec,
+                           laparams=laparams) as device:
+            with open(path, 'rb') as fp:
+                interpreter = PDFPageInterpreter(rsrcmgr, device)
+                password = ""
+                maxpages = 0
+                caching = True
+                pagenos = set()
+
+                for page in PDFPage.get_pages(fp,
+                                              pagenos,
+                                              maxpages=maxpages,
+                                              password=password,
+                                              caching=caching,
+                                              check_extractable=True):
+                    interpreter.process_page(page)
+
+                return retstr.getvalue()
+
+def pdf_to_txt(f):
+    filepath = askopenfilename(
+       filetypes=[("Pdf Files", "*.pdf"), ("All Files", "*.*")])
+    
+    text_str = convert_pdf_to_txt(filepath)
+    
+    # managing unknown characters
+    text_str = text_str.replace("(cid:10)", "")
+    text_str = text_str.replace("", "")
+    
+    txt_edit.delete('1.0', tk.END)
+    txt_edit.insert(tk.END, text_str)
 
 #for speaker
 engine=pyttsx3.init()
@@ -60,7 +155,7 @@ def enviar2(master):
 
 # a function for handling the saving of file part
 def save_file():
-    filepath=asksaveasfilename(defaultextension="txt",filetypes=[("Text Files","*.txt"),("All Files","*.*")],)
+    filepath=asksaveasfilename(defaultextension=".txt",filetypes=[("Text Files","*.txt"),("All Files","*.*")],)
     if not filepath:
          return
     with open(filepath,"w") as output_file:
@@ -89,21 +184,21 @@ def open_audio():
          harvard = sr.AudioFile(input_file)
          with harvard as source:
               audio=recognizer.record(source)
-              text=recognizer.recognize_wit(audio,key=YOUR_WIT_ID)
+              text=recognizer.recognize_wit(audio,key=WIT_ID)
               txt_edit.insert(tk.END, text)
-    window.title(f"Transcibe Audio to Text - {filepath}")
+    window.title(f"Transcribe Audio to Text - {filepath}")
 
 # a function for handling speech to text part
 async def speech_to_text():
     if not isinstance(recognizer,sr.Recognizer):
-       raise TypeError("something's not right!")
+       raise TypeError("something's wrong!")
     if not isinstance(microphone,sr.Microphone):
-       raise TypeError("something's not right!")
+       raise TypeError("something's wrong!")
     text=""
     with microphone as source:
          recognizer.adjust_for_ambient_noise(source)
          audio = recognizer.listen(source)
-         text = recognizer.recognize_wit(audio,key=YOUR_WIT_ID)
+         text = recognizer.recognize_wit(audio,key=WIT_ID)
          #txt_edit.insert(tk.END,text)
     return text
 
@@ -162,7 +257,7 @@ def back():
     home_page.grid(row=0,column=1,sticky="ns")
 
 def text_to_speech():
-    filepath=asksaveasfilename(defaultextension="txt",filetypes=[("Audio Files","*.mp3"),("All Files","*.*")],)
+    filepath=asksaveasfilename(defaultextension=".mp3",filetypes=[("Audio Files","*.mp3"),("All Files","*.*")],)
     if not filepath:
          return
     text=txt_edit.get(1.0,tk.END)
@@ -173,6 +268,11 @@ def text_to_speech():
 def read_text():
     speak(txt_edit.get(1.0,tk.END))
 
+# managing config files
+config_parser = ConfigParser()
+config_parser.read(os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.ini"))
+check_config()
+WIT_ID = safe_conf_get(config_parser, "Tokens", "WIT_ID")
 
 #defining window and title of application
 window = tk.Tk()
@@ -216,7 +316,7 @@ recognizer=sr.Recognizer() # a speech recognizer object
 microphone=sr.Microphone() # a speech input device object
 
 #pg_begin
-pg = Progressbar(fr_pg,orient=tk.HORIZONTAL,length=700,mode='determinate')
+pg = Progressbar(fr_pg,orient=tk.HORIZONTAL,length=100,mode='determinate')
 pg.grid(row=0,column=0,padx=10,pady=10)
 #pg_end
 
@@ -229,6 +329,8 @@ btn_paint = tk.Button(fr_buttons,image=paint_img,command=choose_option)
 btn_audioToTxt = tk.Button(fr_buttons,text="Audio To Text",command=lambda :Task(window, enviar))
 btn_txtToaudio = tk.Button(fr_buttons,text="Text To Audio",command=lambda :Task(window, enviar1))
 btn_txtRead = tk.Button(fr_buttons,text="Read Text",command=lambda :Task(window, enviar2))
+btn_txt_to_pdf = tk.Button(fr_buttons,text="Text to PDF",command=lambda :Task(window, text_to_pdf))
+btn_pdf_to_txt = tk.Button(fr_buttons,text="PDF To Text",command=lambda :Task(window, pdf_to_txt))
 #btnEnd
 
 #btn placement on the window
@@ -239,7 +341,10 @@ btn_paint.grid(row=3,column=0,sticky="ew",padx=5,pady=10)
 btn_audioToTxt.grid(row=4,column=0,sticky="ew",padx=5,pady=10)
 btn_txtToaudio.grid(row=5,column=0,sticky="ew",padx=5,pady=10)
 btn_txtRead.grid(row=6,column=0,sticky="ew",padx=5,pady=10)
-btn_back.grid(row=7,column=0,sticky="ew",padx=5)
+btn_txt_to_pdf.grid(row=7, column=0,sticky="ew",padx=5, pady=10)
+btn_pdf_to_txt.grid(row=8, column=0,sticky="ew",padx=5, pady=10)
+btn_back.grid(row=9,column=0,sticky="ew",padx=5)
+
 
 
 window.protocol("WM_DELETE_WINDOW", on_closing)
