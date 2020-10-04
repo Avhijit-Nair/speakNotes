@@ -1,7 +1,9 @@
 pyaudio
-PIL
+pillow
 tkfontchooser
 gTTs
 asyncio
 pyttsx3
-speech_recognition
+SpeechRecognition
+fpdf
+pdfminer
